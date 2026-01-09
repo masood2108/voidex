@@ -2,7 +2,7 @@ import { Home, Users, Calendar, Bot, User } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 
 const navItems = [
-  { icon: Home, path: "/" },
+  { icon: Home, path: "/dashboard" },
   { icon: Users, path: "/clients" },
   { icon: Calendar, path: "/calendar" },
   { icon: Bot, path: "/ai" },

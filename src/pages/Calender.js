@@ -54,9 +54,29 @@ function Calendar() {
     )
   }, [user])
 
+  const createNotification = async ({ type, title, message }) => {
+    await addDoc(
+      collection(db, "users", user.uid, "notifications"),
+      {
+        type,
+        title,
+        message,
+        read: false,
+        createdAt: serverTimestamp()
+      }
+    )
+  }
+
   /* ================= SAVE EVENT ================= */
   const saveEvent = async () => {
     if (!form.title || !form.date) return
+
+    const category =
+      form.type === "meeting"
+        ? "scheduled"
+        : form.type === "payment"
+        ? "payment"
+        : "work"
 
     await addDoc(collection(db, "users", user.uid, "events"), {
       title: form.title,
@@ -64,27 +84,61 @@ function Calendar() {
       date: form.date,
       time: form.time || null,
       type: form.type,
-      category:
-        form.type === "meeting"
-          ? "scheduled"
-          : form.type === "payment"
-          ? "payment"
-          : "work",
+      category,
       createdAt: serverTimestamp()
+    })
+
+    // 🔔 NOTIFICATION
+    await createNotification({
+      type: form.type,
+      title:
+        form.type === "meeting"
+          ? "New meeting scheduled"
+          : form.type === "payment"
+          ? "Payment task added"
+          : "New task added",
+      message: `${form.title} (${form.client || "General"})`
     })
 
     setShowModal(false)
     setForm({ title: "", client: "", date: "", time: "", type: "task" })
   }
 
+  /* ================= MARK COMPLETED ================= */
   const markCompleted = async (id) => {
-    await updateDoc(doc(db, "users", user.uid, "events", id), {
-      category: "completed"
-    })
+    await updateDoc(
+      doc(db, "users", user.uid, "events", id),
+      { category: "completed" }
+    )
+
+    await addDoc(
+      collection(db, "users", user.uid, "notifications"),
+      {
+        type: "completed",
+        title: "Event completed",
+        message: "An event was marked as completed",
+        read: false,
+        createdAt: serverTimestamp()
+      }
+    )
   }
 
+  /* ================= DELETE EVENT ================= */
   const deleteEvent = async (id) => {
-    await deleteDoc(doc(db, "users", user.uid, "events", id))
+    await deleteDoc(
+      doc(db, "users", user.uid, "events", id)
+    )
+
+    await addDoc(
+      collection(db, "users", user.uid, "notifications"),
+      {
+        type: "delete",
+        title: "Event deleted",
+        message: "An event was removed from calendar",
+        read: false,
+        createdAt: serverTimestamp()
+      }
+    )
   }
 
   /* ================= CALENDAR LOGIC ================= */
@@ -159,7 +213,6 @@ function Calendar() {
         {/* ================= MONTH VIEW ================= */}
         {view === "month" && (
           <div className="card p-6 mx-auto w-fit">
-
             <div className="flex justify-between mb-4">
               <button onClick={() => setCurrent(new Date(year, month - 1))}>
                 <ChevronLeft />
@@ -192,7 +245,6 @@ function Calendar() {
                   >
                     <span className="text-sm font-medium">{day}</span>
 
-                    {/* DOTS */}
                     <div className="flex gap-1 mt-2">
                       {["payment","work","scheduled","completed"].map(type =>
                         dayEvents.some(e => e.category === type) ? (
@@ -248,8 +300,6 @@ function Calendar() {
         )}
       </div>
 
-
-
       {/* ================= ADD MODAL ================= */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
@@ -300,9 +350,7 @@ function Calendar() {
 function Legend({ type, label }) {
   return (
     <div className="flex items-center gap-2">
-      <span
-        className={`h-3 w-3 rounded-full ${COLORS[type]} ring-2 ring-white/20`}
-      />
+      <span className={`h-3 w-3 rounded-full ${COLORS[type]} ring-2 ring-white/20`} />
       <span className="text-muted">{label}</span>
     </div>
   )
