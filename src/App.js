@@ -14,6 +14,7 @@ import Clients from "./pages/Clients"
 import ClientDetails from "./pages/ClientDetails"
 import ProjectDetails from "./pages/ProjectDetails"
 import Calendar from "./pages/Calender"
+import JarvisChat from "./pages/jarvischat"
 
 /* ✅ LAYOUT */
 import Layout from "./layouts/Layout"
@@ -28,6 +29,7 @@ function App() {
             {/* ================= PUBLIC ================= */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+              <Route path="/ai" element={<JarvisChat />} />   {/* 👈 THIS */}
 
             {/* ================= PROTECTED + LAYOUT ================= */}
             <Route
@@ -106,7 +108,6 @@ function App() {
             />
 
             {/* ================= FALLBACK ================= */}
-            <Route path="*" element={<Login />} />
 
           </Routes>
         </DataProvider>
