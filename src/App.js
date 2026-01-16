@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 
 import AuthProvider from "./context/AuthContext"
 import DataProvider from "./context/DataContext"
@@ -16,7 +16,7 @@ import ProjectDetails from "./pages/ProjectDetails"
 import Calendar from "./pages/Calender"
 import JarvisChat from "./pages/jarvischat"
 
-/* ✅ LAYOUT */
+/* LAYOUT */
 import Layout from "./layouts/Layout"
 
 function App() {
@@ -26,10 +26,13 @@ function App() {
         <DataProvider>
           <Routes>
 
+            {/* ✅ ROOT FIX */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+
             {/* ================= PUBLIC ================= */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-              <Route path="/ai" element={<JarvisChat />} />   {/* 👈 THIS */}
+            <Route path="/ai" element={<JarvisChat />} />
 
             {/* ================= PROTECTED + LAYOUT ================= */}
             <Route
@@ -107,7 +110,8 @@ function App() {
               }
             />
 
-            {/* ================= FALLBACK ================= */}
+            {/* ✅ FALLBACK */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
 
           </Routes>
         </DataProvider>
